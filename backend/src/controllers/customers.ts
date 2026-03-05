@@ -199,7 +199,7 @@ export const updateCustomer = async (
             req.body,
             {
                 new: true,
-                runValidators: true
+                runValidators: true,
             }
         )
             .orFail(

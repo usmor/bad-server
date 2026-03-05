@@ -103,8 +103,10 @@ const updateProduct = async (
 
         const dataToUpdate: any = {}
         if (sanitizedTitle !== undefined) dataToUpdate.title = sanitizedTitle
-        if (sanitizedCategory !== undefined) dataToUpdate.category = sanitizedCategory
-        if (sanitizedDescription !== undefined) dataToUpdate.description = sanitizedDescription
+        if (sanitizedCategory !== undefined)
+            dataToUpdate.category = sanitizedCategory
+        if (sanitizedDescription !== undefined)
+            dataToUpdate.description = sanitizedDescription
         if (price !== undefined) dataToUpdate.price = price || null
         if (image !== undefined) dataToUpdate.image = image
 

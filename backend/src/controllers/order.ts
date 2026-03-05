@@ -300,7 +300,7 @@ export const createOrder = async (
         const userId = res.locals.user._id
         const { address, payment, phone, total, email, items, comment } =
             req.body
-        
+
         const sanitizedAddress = sanitize(address, 'strict')
         const sanitizedPhone = sanitize(phone, 'strict')
         const sanitizedEmail = sanitize(email, 'strict')
