@@ -45,8 +45,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
-app.use(urlencoded({ extended: true }))
-app.use(json())
+app.use(urlencoded({ extended: true, limit: '1mb', parameterLimit: 20 }))
+app.use(json({ limit: '1mb' }))
 
 app.options('*', cors())
 app.use(routes)
