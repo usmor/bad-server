@@ -5,6 +5,12 @@ import Order from '../models/order'
 import User, { IUser } from '../models/user'
 import { sanitize } from '../utils/sanitize'
 import escapeRegExp from '../utils/escapeRegExp'
+import {
+    sanitizeValue,
+    sanitizeNumber,
+    sanitizeNumberRange,
+    sanitizeDateRange,
+} from '../utils/noSql-guard'
 
 // TODO: Добавить guard admin
 // eslint-disable-next-line max-len
@@ -15,6 +21,7 @@ export const getCustomers = async (
     next: NextFunction
 ) => {
     try {
+        const sanitizedQuery = sanitizeValue(req.query)
         const {
             page = 1,
             limit = 10,
@@ -29,69 +36,99 @@ export const getCustomers = async (
             orderCountFrom,
             orderCountTo,
             search,
-        } = req.query
+        } = sanitizedQuery
 
         const filters: FilterQuery<Partial<IUser>> = {}
 
-        if (registrationDateFrom) {
-            filters.createdAt = {
-                ...filters.createdAt,
-                $gte: new Date(registrationDateFrom as string),
-            }
-        }
+        const registrationDateFilter = sanitizeDateRange(
+            registrationDateFrom,
+            registrationDateTo,
+            new Date('2000-01-01'),
+            new Date()
+        )
+        if (registrationDateFilter) filters.createdAt = registrationDateFilter
 
-        if (registrationDateTo) {
-            const endOfDay = new Date(registrationDateTo as string)
-            endOfDay.setHours(23, 59, 59, 999)
-            filters.createdAt = {
-                ...filters.createdAt,
-                $lte: endOfDay,
-            }
-        }
+        const lastOrderDateFilter = sanitizeDateRange(
+            lastOrderDateFrom,
+            lastOrderDateTo,
+            undefined,
+            new Date()
+        )
+        if (lastOrderDateFilter) filters.lastOrderDate = lastOrderDateFilter
 
-        if (lastOrderDateFrom) {
-            filters.lastOrderDate = {
-                ...filters.lastOrderDate,
-                $gte: new Date(lastOrderDateFrom as string),
-            }
-        }
+        const totalAmountFilter = sanitizeNumberRange(
+            totalAmountFrom,
+            totalAmountTo,
+            0
+        )
+        if (totalAmountFilter) filters.totalAmount = totalAmountFilter
 
-        if (lastOrderDateTo) {
-            const endOfDay = new Date(lastOrderDateTo as string)
-            endOfDay.setHours(23, 59, 59, 999)
-            filters.lastOrderDate = {
-                ...filters.lastOrderDate,
-                $lte: endOfDay,
-            }
-        }
+        const orderCountFilter = sanitizeNumberRange(
+            orderCountFrom,
+            orderCountTo,
+            0
+        )
+        if (orderCountFilter) filters.orderCount = orderCountFilter
 
-        if (totalAmountFrom) {
-            filters.totalAmount = {
-                ...filters.totalAmount,
-                $gte: Number(totalAmountFrom),
-            }
-        }
+        // if (registrationDateFrom) {
+        //     filters.createdAt = {
+        //         ...filters.createdAt,
+        //         $gte: new Date(registrationDateFrom as string),
+        //     }
+        // }
 
-        if (totalAmountTo) {
-            filters.totalAmount = {
-                ...filters.totalAmount,
-                $lte: Number(totalAmountTo),
-            }
-        }
+        // if (registrationDateTo) {
+        //     const endOfDay = new Date(registrationDateTo as string)
+        //     endOfDay.setHours(23, 59, 59, 999)
+        //     filters.createdAt = {
+        //         ...filters.createdAt,
+        //         $lte: endOfDay,
+        //     }
+        // }
 
-        if (orderCountFrom) {
-            filters.orderCount = {
-                ...filters.orderCount,
-                $gte: Number(orderCountFrom),
-            }
-        }
+        // if (lastOrderDateFrom) {
+        //     filters.lastOrderDate = {
+        //         ...filters.lastOrderDate,
+        //         $gte: new Date(lastOrderDateFrom as string),
+        //     }
+        // }
 
-        if (orderCountTo) {
-            filters.orderCount = {
-                ...filters.orderCount,
-                $lte: Number(orderCountTo),
-            }
-        }
+        // if (lastOrderDateTo) {
+        //     const endOfDay = new Date(lastOrderDateTo as string)
+        //     endOfDay.setHours(23, 59, 59, 999)
+        //     filters.lastOrderDate = {
+        //         ...filters.lastOrderDate,
+        //         $lte: endOfDay,
+        //     }
+        // }
+
+        // if (totalAmountFrom) {
+        //     filters.totalAmount = {
+        //         ...filters.totalAmount,
+        //         $gte: Number(totalAmountFrom),
+        //     }
+        // }
+
+        // if (totalAmountTo) {
+        //     filters.totalAmount = {
+        //         ...filters.totalAmount,
+        //         $lte: Number(totalAmountTo),
+        //     }
+        // }
+
+        // if (orderCountFrom) {
+        //     filters.orderCount = {
+        //         ...filters.orderCount,
+        //         $gte: Number(orderCountFrom),
+        //     }
+        // }
+
+        // if (orderCountTo) {
+        //     filters.orderCount = {
+        //         ...filters.orderCount,
+        //         $lte: Number(orderCountTo),
+        //     }
+        // }
 
         if (search) {
             const sanitizedSearch = sanitize(search as string, 'strict')
@@ -120,8 +157,8 @@ export const getCustomers = async (
 
         const options = {
             sort,
-            skip: (Number(page) - 1) * Number(limit),
-            limit: Number(limit),
+            skip: (sanitizeNumber(page)! - 1) * sanitizeNumber(limit)!,
+            limit: sanitizeNumber(limit)!,
         }
 
         const users = await User.find(filters, null, options).populate([

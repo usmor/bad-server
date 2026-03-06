@@ -7,6 +7,12 @@ import Product, { IProduct } from '../models/product'
 import User from '../models/user'
 import { sanitize } from '../utils/sanitize'
 import escapeRegExp from '../utils/escapeRegExp'
+import {
+    sanitizeValue,
+    sanitizeNumber,
+    sanitizeNumberRange,
+    sanitizeDateRange,
+} from '../utils/noSql-guard'
 
 // eslint-disable-next-line max-len
 // GET /orders?page=2&limit=5&sort=totalAmount&order=desc&orderDateFrom=2024-07-01&orderDateTo=2024-08-01&status=delivering&totalAmountFrom=100&totalAmountTo=1000&search=%2B1
@@ -17,6 +23,7 @@ export const getOrders = async (
     next: NextFunction
 ) => {
     try {
+        const sanitizedQuery = sanitizeValue(req.query)
         const {
             page = 1,
             limit = 10,
@@ -28,46 +35,77 @@ export const getOrders = async (
             orderDateFrom,
             orderDateTo,
             search,
-        } = req.query
+        } = sanitizedQuery
 
         const filters: FilterQuery<Partial<IOrder>> = {}
 
         if (status) {
-            if (typeof status === 'object') {
-                Object.assign(filters, status)
-            }
             if (typeof status === 'string') {
-                filters.status = status
+                const sanitizedStatus = sanitize(status, 'strict')
+                if (sanitizedStatus) {
+                    filters.status = sanitizedStatus
+                }
+            }
+
+            if (typeof status === 'object' && !Array.isArray(status)) {
+                const sanitizedStatus = sanitizeValue(status)
+                if (sanitizedStatus) {
+                    filters.status = sanitizedStatus
+                }
             }
         }
 
-        if (totalAmountFrom) {
-            filters.totalAmount = {
-                ...filters.totalAmount,
-                $gte: Number(totalAmountFrom),
-            }
-        }
+        // if (status) {
+        //     if (typeof status === 'object') {
+        //         Object.assign(filters, status)
+        //     }
+        //     if (typeof status === 'string') {
+        //         filters.status = status
+        //     }
+        // }
 
-        if (totalAmountTo) {
-            filters.totalAmount = {
-                ...filters.totalAmount,
-                $lte: Number(totalAmountTo),
-            }
-        }
+        // if (totalAmountFrom) {
+        //     filters.totalAmount = {
+        //         ...filters.totalAmount,
+        //         $gte: Number(totalAmountFrom),
+        //     }
+        // }
 
-        if (orderDateFrom) {
-            filters.createdAt = {
-                ...filters.createdAt,
-                $gte: new Date(orderDateFrom as string),
-            }
-        }
+        // if (totalAmountTo) {
+        //     filters.totalAmount = {
+        //         ...filters.totalAmount,
+        //         $lte: Number(totalAmountTo),
+        //     }
+        // }
 
-        if (orderDateTo) {
-            filters.createdAt = {
-                ...filters.createdAt,
-                $lte: new Date(orderDateTo as string),
-            }
-        }
+        // if (orderDateFrom) {
+        //     filters.createdAt = {
+        //         ...filters.createdAt,
+        //         $gte: new Date(orderDateFrom as string),
+        //     }
+        // }
+
+        // if (orderDateTo) {
+        //     filters.createdAt = {
+        //         ...filters.createdAt,
+        //         $lte: new Date(orderDateTo as string),
+        //     }
+        // }
+
+        const totalAmountFilter = sanitizeNumberRange(
+            totalAmountFrom,
+            totalAmountTo,
+            0
+        )
+        if (totalAmountFilter) filters.totalAmount = totalAmountFilter
+
+        const OrderDateFilter = sanitizeDateRange(
+            orderDateFrom,
+            orderDateTo,
+            undefined,
+            new Date()
+        )
+        if (OrderDateFilter) filters.createdAt = OrderDateFilter
 
         const aggregatePipeline: any[] = [
             { $match: filters },
