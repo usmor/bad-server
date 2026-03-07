@@ -1,9 +1,11 @@
 import { Request, Express } from 'express'
 import multer, { FileFilterCallback } from 'multer'
-import { join } from 'path'
+import { join, extname } from 'path'
 
 type DestinationCallback = (error: Error | null, destination: string) => void
 type FileNameCallback = (error: Error | null, filename: string) => void
+
+const allowedExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg']
 
 const storage = multer.diskStorage({
     destination: (
@@ -27,7 +29,15 @@ const storage = multer.diskStorage({
         file: Express.Multer.File,
         cb: FileNameCallback
     ) => {
-        cb(null, file.originalname)
+        const extension = extname(file.originalname).toLowerCase()
+
+        if (!allowedExtensions.includes(extension)) {
+            return cb(new Error('Недопустимый формат файла'), '')
+        }
+
+        const safeName = crypto.randomUUID() + extension
+
+        cb(null, safeName)
     },
 })
 
