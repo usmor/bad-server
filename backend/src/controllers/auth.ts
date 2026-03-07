@@ -16,10 +16,9 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body
         const sanitizedEmail = sanitize(email, 'strict')
-        const sanitizedPassword = sanitize(password, 'strict')
         const user = await User.findUserByCredentials(
             sanitizedEmail,
-            sanitizedPassword
+            password
         )
         const accessToken = user.generateAccessToken()
         const refreshToken = await user.generateRefreshToken()
@@ -43,11 +42,10 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password, name } = req.body
         const sanitizedEmail = sanitize(email, 'strict')
-        const sanitizedPassword = sanitize(password, 'strict')
         const sanitizedName = sanitize(name, 'strict')
         const newUser = new User({
             email: sanitizedEmail,
-            password: sanitizedPassword,
+            password: password,
             name: sanitizedName,
         })
         await newUser.save()

@@ -9,31 +9,13 @@ import { DB_ADDRESS, ORIGIN_ALLOW } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
-import helmet from 'helmet'
 import { sanitizeJsonResponse, securityHeaders } from './middlewares/security'
 import { basicLimiter } from './middlewares/limiter'
 
 const { PORT = 3000 } = process.env
 const app = express()
 
-app.use(
-    helmet({
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                scriptSrc: ["'self'"],
-                imgSrc: ["'self'", 'data:', 'https:'],
-                connectSrc: ["'self'"],
-                fontSrc: ["'self'"],
-                objectSrc: ["'none'"],
-                mediaSrc: ["'self'"],
-                frameSrc: ["'none'"],
-            },
-        },
-        crossOriginEmbedderPolicy: false,
-    })
-)
+app.set('trust proxy', 1)
 
 app.use(securityHeaders)
 app.use(sanitizeJsonResponse)

@@ -233,7 +233,7 @@ export const updateCustomer = async (
         }
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            dataToUpdate,
             {
                 new: true,
                 runValidators: true,
