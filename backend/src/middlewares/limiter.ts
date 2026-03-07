@@ -13,6 +13,7 @@ export const authLimiter = rateLimit({
     max: 5,
     message: 'Слишком много попыток входа, попробуйте снова через 15 минут.',
     standardHeaders: true,
+    skipSuccessfulRequests: true,
     legacyHeaders: false,
 })
 
