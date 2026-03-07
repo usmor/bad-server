@@ -11,6 +11,7 @@ import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
 import helmet from 'helmet'
 import { sanitizeJsonResponse, securityHeaders } from './middlewares/security'
+import { basicLimiter } from './middlewares/limiter'
 
 const { PORT = 3000 } = process.env
 const app = express()
@@ -47,7 +48,7 @@ app.use(serveStatic(path.join(__dirname, 'public')))
 
 app.use(urlencoded({ extended: true, limit: '1mb', parameterLimit: 20 }))
 app.use(json({ limit: '1mb' }))
-
+app.use(basicLimiter)
 app.options('*', cors())
 app.use(routes)
 app.use(errors())
