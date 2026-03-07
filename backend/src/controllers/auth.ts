@@ -45,7 +45,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
         const sanitizedName = sanitize(name, 'strict')
         const newUser = new User({
             email: sanitizedEmail,
-            password: password,
+            password,
             name: sanitizedName,
         })
         await newUser.save()

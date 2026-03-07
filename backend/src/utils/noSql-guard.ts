@@ -46,7 +46,7 @@ export function sanitizeDate(
 ): Date | undefined {
     const date =
         value instanceof Date ? value : new Date(value as string | number)
-    if (isNaN(date.getTime())) return undefined
+    if (Number.isNaN(date.getTime())) return undefined
     if (minAllowed && date < minAllowed) return undefined
     if (maxAllowed && date > maxAllowed) return undefined
     return date

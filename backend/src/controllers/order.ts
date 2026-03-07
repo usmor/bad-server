@@ -9,7 +9,6 @@ import { sanitize } from '../utils/sanitize'
 import escapeRegExp from '../utils/escapeRegExp'
 import {
     sanitizeValue,
-    sanitizeNumber,
     sanitizeNumberRange,
     sanitizeDateRange,
 } from '../utils/noSql-guard'

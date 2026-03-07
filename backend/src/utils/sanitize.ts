@@ -1,12 +1,12 @@
 import sanitizeHtml from 'sanitize-html'
 
-const basic_settings = {
+const basicSettings = {
     allowedTags: ['b', 'i', 'strong', 'br', 'p'],
     allowedAttributes: {},
     disallowedTagsMode: 'discard' as const,
 }
 
-const strict_settings = {
+const strictSettings = {
     allowedTags: [],
     allowedAttributes: {},
     disallowedTagsMode: 'discard' as const,
@@ -19,8 +19,8 @@ export function sanitize(input: string, mode: mode = 'basic'): string {
     if (typeof input !== 'string') return ''
 
     if (mode === 'basic') {
-        return sanitizeHtml(input, basic_settings).trim()
-    } else {
-        return sanitizeHtml(input, strict_settings).trim()
-    }
+        return sanitizeHtml(input, basicSettings).trim()
+    } 
+    
+    return sanitizeHtml(input, strictSettings).trim()
 }
