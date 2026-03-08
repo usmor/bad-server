@@ -6,13 +6,14 @@ import {
     updateCustomer,
 } from '../controllers/customers'
 import auth from '../middlewares/auth'
-import { doubleCsrfProtection } from '../middlewares/csrf'
+import csrf from 'csurf'
 
 const customerRouter = Router()
+const csrfProtection = csrf({ cookie: true })
 
 customerRouter.get('/', auth, getCustomers)
 customerRouter.get('/:id', auth, getCustomerById)
-customerRouter.patch('/:id', auth, doubleCsrfProtection, updateCustomer)
-customerRouter.delete('/:id', auth, doubleCsrfProtection, deleteCustomer)
+customerRouter.patch('/:id', auth, csrfProtection, updateCustomer)
+customerRouter.delete('/:id', auth, csrfProtection, deleteCustomer)
 
 export default customerRouter

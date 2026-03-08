@@ -13,6 +13,9 @@
   },
   "author": "< Укажите здесь автора работы >",
   "license": "ISC",
+  "overrides": {
+    "cookie": "^0.7.2"
+  },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.7",
@@ -38,12 +41,13 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
+    "@types/csurf": "^1.11.5",
     "@types/jsonwebtoken": "^9.0.6",
     "bcryptjs": "^2.4.3",
     "celebrate": "^15.0.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "csrf-csrf": "^4.0.3",
+    "csurf": "^1.2.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-rate-limit": "^8.3.0",
