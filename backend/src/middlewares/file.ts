@@ -1,4 +1,4 @@
-import { Request, Express } from 'express'
+import { Request, Express, NextFunction, Response } from 'express'
 import multer, { FileFilterCallback } from 'multer'
 import { join, extname } from 'path'
 
@@ -73,3 +73,23 @@ export default multer({
         parts: 20,
     },
 })
+
+export const checkMinFileSize = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const file = req.file
+
+    if (!file) {
+        return res.status(400).json({ message: 'Файл не загружен' })
+    }
+
+    if (file.size < 2 * 1024) {
+        return res.status(400).json({
+            message: 'Файл слишком маленький',
+        })
+    }
+
+    next()
+}
