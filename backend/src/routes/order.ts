@@ -11,11 +11,9 @@ import {
 import auth, { roleGuardMiddleware } from '../middlewares/auth'
 import { validateOrderBody } from '../middlewares/validations'
 import { Role } from '../models/user'
-import csrf from 'csurf'
+import { doubleCsrfProtection } from '../middlewares/csrf'
 
 const orderRouter = Router()
-
-const csrfProtection = csrf({ cookie: true })
 
 orderRouter.post('/', auth, validateOrderBody, createOrder)
 orderRouter.get('/all', auth, roleGuardMiddleware(Role.Admin), getOrders)
@@ -30,7 +28,7 @@ orderRouter.get('/me/:orderNumber', auth, getOrderCurrentUserByNumber)
 orderRouter.patch(
     '/:orderNumber',
     auth,
-    csrfProtection,
+    doubleCsrfProtection,
     roleGuardMiddleware(Role.Admin),
     updateOrder
 )
@@ -38,7 +36,7 @@ orderRouter.patch(
 orderRouter.delete(
     '/:id',
     auth,
-    csrfProtection,
+    doubleCsrfProtection,
     roleGuardMiddleware(Role.Admin),
     deleteOrder
 )

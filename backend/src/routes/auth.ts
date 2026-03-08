@@ -1,5 +1,4 @@
 import { Router } from 'express'
-import csrf from 'csurf'
 import {
     getCurrentUser,
     getCurrentUserRoles,
@@ -11,17 +10,17 @@ import {
 } from '../controllers/auth'
 import auth from '../middlewares/auth'
 import { authLimiter } from '../middlewares/limiter'
+import { doubleCsrfProtection, generateCsrfToken } from '../middlewares/csrf'
 
 const authRouter = Router()
 
-const csrfProtection = csrf({ cookie: true })
-
-authRouter.get('/csrf-token', csrfProtection, (req, res) => {
-    res.json({ csrfToken: req.csrfToken() })
+authRouter.get('/csrf-token', (req, res) => {
+    const token = generateCsrfToken(req, res)
+    res.json({ csrfToken: token })
 })
 
 authRouter.get('/user', auth, getCurrentUser)
-authRouter.patch('/me', auth, csrfProtection, updateCurrentUser)
+authRouter.patch('/me', auth, doubleCsrfProtection, updateCurrentUser)
 authRouter.get('/user/roles', auth, getCurrentUserRoles)
 authRouter.post('/login', authLimiter, login)
 authRouter.get('/token', authLimiter, refreshAccessToken)
