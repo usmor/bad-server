@@ -2,7 +2,7 @@ import { rateLimit } from 'express-rate-limit'
 
 export const basicLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
-    limit: 100,
+    limit: 50,
     message: 'Слишком много запросов, попробуйте снова через 1 минуту.',
     standardHeaders: true,
     legacyHeaders: false,
