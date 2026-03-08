@@ -20,7 +20,7 @@ export function sanitize(input: string, mode: mode = 'basic'): string {
 
     if (mode === 'basic') {
         return sanitizeHtml(input, basicSettings).trim()
-    } 
-    
+    }
+
     return sanitizeHtml(input, strictSettings).trim()
 }

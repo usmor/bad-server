@@ -17,7 +17,6 @@ import csrf from 'csurf'
 const productRouter = Router()
 const csrfProtection = csrf({ cookie: true })
 
-
 productRouter.get('/', getProducts)
 productRouter.post(
     '/',

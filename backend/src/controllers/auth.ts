@@ -16,10 +16,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body
         const sanitizedEmail = sanitize(email, 'strict')
-        const user = await User.findUserByCredentials(
-            sanitizedEmail,
-            password
-        )
+        const user = await User.findUserByCredentials(sanitizedEmail, password)
         const accessToken = user.generateAccessToken()
         const refreshToken = await user.generateRefreshToken()
         res.cookie(

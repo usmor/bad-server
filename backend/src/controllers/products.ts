@@ -25,7 +25,7 @@ const getProducts = async (req: Request, res: Response, next: NextFunction) => {
             pagination: {
                 totalProducts,
                 totalPages,
-                currentPage:Math.max(Number(page) || 1, 1),
+                currentPage: Math.max(Number(page) || 1, 1),
                 pageSize: Math.min(Number(limit) || 10, 10),
             },
         })
