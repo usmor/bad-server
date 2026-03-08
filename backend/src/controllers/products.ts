@@ -7,6 +7,7 @@ import ConflictError from '../errors/conflict-error'
 import NotFoundError from '../errors/not-found-error'
 import Product from '../models/product'
 import movingFile from '../utils/movingFile'
+import { sanitize } from '../utils/sanitize'
 
 // GET /product
 const getProducts = async (req: Request, res: Response, next: NextFunction) => {
@@ -24,8 +25,8 @@ const getProducts = async (req: Request, res: Response, next: NextFunction) => {
             pagination: {
                 totalProducts,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: Math.max(Number(page) || 1, 1),
+                pageSize: Math.min(Number(limit) || 10, 10),
             },
         })
     } catch (err) {
@@ -42,6 +43,10 @@ const createProduct = async (
     try {
         const { description, category, price, title, image } = req.body
 
+        const sanitizedTitle = sanitize(title, 'strict')
+        const sanitizedCategory = sanitize(category, 'strict')
+        const sanitizedDescription = sanitize(description, 'basic')
+
         // Переносим картинку из временной папки
         if (image) {
             movingFile(
@@ -52,11 +57,11 @@ const createProduct = async (
         }
 
         const product = await Product.create({
-            description,
+            description: sanitizedDescription,
             image,
-            category,
+            category: sanitizedCategory,
             price,
-            title,
+            title: sanitizedTitle,
         })
         return res.status(constants.HTTP_STATUS_CREATED).send(product)
     } catch (error) {
@@ -81,7 +86,11 @@ const updateProduct = async (
 ) => {
     try {
         const { productId } = req.params
-        const { image } = req.body
+        const { description, category, price, title, image } = req.body
+
+        const sanitizedTitle = sanitize(title, 'strict')
+        const sanitizedCategory = sanitize(category, 'strict')
+        const sanitizedDescription = sanitize(description, 'basic')
 
         // Переносим картинку из временной папки
         if (image) {
@@ -92,15 +101,18 @@ const updateProduct = async (
             )
         }
 
+        const dataToUpdate: any = {}
+        if (sanitizedTitle !== undefined) dataToUpdate.title = sanitizedTitle
+        if (sanitizedCategory !== undefined)
+            dataToUpdate.category = sanitizedCategory
+        if (sanitizedDescription !== undefined)
+            dataToUpdate.description = sanitizedDescription
+        if (price !== undefined) dataToUpdate.price = price || null
+        if (image !== undefined) dataToUpdate.image = image
+
         const product = await Product.findByIdAndUpdate(
             productId,
-            {
-                $set: {
-                    ...req.body,
-                    price: req.body.price ? req.body.price : null,
-                    image: req.body.image ? req.body.image : undefined,
-                },
-            },
+            { $set: dataToUpdate },
             { runValidators: true, new: true }
         ).orFail(() => new NotFoundError('Нет товара по заданному id'))
         return res.send(product)

@@ -9,12 +9,14 @@ import ConflictError from '../errors/conflict-error'
 import NotFoundError from '../errors/not-found-error'
 import UnauthorizedError from '../errors/unauthorized-error'
 import User from '../models/user'
+import { sanitize } from '../utils/sanitize'
 
 // POST /auth/login
 const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body
-        const user = await User.findUserByCredentials(email, password)
+        const sanitizedEmail = sanitize(email, 'strict')
+        const user = await User.findUserByCredentials(sanitizedEmail, password)
         const accessToken = user.generateAccessToken()
         const refreshToken = await user.generateRefreshToken()
         res.cookie(
@@ -36,7 +38,13 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password, name } = req.body
-        const newUser = new User({ email, password, name })
+        const sanitizedEmail = sanitize(email, 'strict')
+        const sanitizedName = sanitize(name, 'strict')
+        const newUser = new User({
+            email: sanitizedEmail,
+            password,
+            name: sanitizedName,
+        })
         await newUser.save()
         const accessToken = newUser.generateAccessToken()
         const refreshToken = await newUser.generateRefreshToken()
@@ -192,8 +200,22 @@ const updateCurrentUser = async (
 ) => {
     const userId = res.locals.user._id
     try {
-        const updatedUser = await User.findByIdAndUpdate(userId, req.body, {
+        const dataToUpdate = { ...req.body }
+
+        // Санитизируем только критически важные поля
+        if (dataToUpdate.name) {
+            dataToUpdate.name = sanitize(dataToUpdate.name, 'strict')
+        }
+        if (dataToUpdate.email) {
+            dataToUpdate.email = sanitize(dataToUpdate.email, 'strict')
+        }
+        if (dataToUpdate.phone) {
+            dataToUpdate.phone = sanitize(dataToUpdate.phone, 'strict')
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, dataToUpdate, {
             new: true,
+            runValidators: true,
         }).orFail(
             () =>
                 new NotFoundError(

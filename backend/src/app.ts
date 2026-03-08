@@ -5,25 +5,32 @@ import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
-import { DB_ADDRESS } from './config'
+import { DB_ADDRESS, ORIGIN_ALLOW } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
+import { sanitizeJsonResponse, securityHeaders } from './middlewares/security'
+import { basicLimiter } from './middlewares/limiter'
 
 const { PORT = 3000 } = process.env
 const app = express()
 
+app.set('trust proxy', 1)
+
+app.use(securityHeaders)
+app.use(sanitizeJsonResponse)
+
 app.use(cookieParser())
 
-app.use(cors())
-// app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
-// app.use(express.static(path.join(__dirname, 'public')));
+// app.use(cors())
+app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }))
+// app.use(express.static(path.join(__dirname, 'public')))
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
-app.use(urlencoded({ extended: true }))
-app.use(json())
-
+app.use(urlencoded({ extended: true, limit: '1mb', parameterLimit: 20 }))
+app.use(json({ limit: '1mb' }))
+app.use(basicLimiter)
 app.options('*', cors())
 app.use(routes)
 app.use(errors())

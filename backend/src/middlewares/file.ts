@@ -1,9 +1,11 @@
-import { Request, Express } from 'express'
+import { Request, Express, NextFunction, Response } from 'express'
 import multer, { FileFilterCallback } from 'multer'
-import { join } from 'path'
+import { join, extname } from 'path'
 
 type DestinationCallback = (error: Error | null, destination: string) => void
 type FileNameCallback = (error: Error | null, filename: string) => void
+
+const allowedExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg']
 
 const storage = multer.diskStorage({
     destination: (
@@ -27,7 +29,15 @@ const storage = multer.diskStorage({
         file: Express.Multer.File,
         cb: FileNameCallback
     ) => {
-        cb(null, file.originalname)
+        const extension = extname(file.originalname).toLowerCase()
+
+        if (!allowedExtensions.includes(extension)) {
+            return cb(new Error('Недопустимый формат файла'), '')
+        }
+
+        const safeName = crypto.randomUUID() + extension
+
+        cb(null, safeName)
     },
 })
 
@@ -51,4 +61,35 @@ const fileFilter = (
     return cb(null, true)
 }
 
-export default multer({ storage, fileFilter })
+export default multer({
+    storage,
+    fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+        files: 1,
+        fieldNameSize: 100,
+        fieldSize: 1024 * 1024,
+        fields: 10,
+        parts: 20,
+    },
+})
+
+export const checkMinFileSize = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const file = req.file
+
+    if (!file) {
+        return res.status(400).json({ message: 'Файл не загружен' })
+    }
+
+    if (file.size < 2 * 1024) {
+        return res.status(400).json({
+            message: 'Файл слишком маленький',
+        })
+    }
+
+    next()
+}
