@@ -70,66 +70,6 @@ export const getCustomers = async (
         )
         if (orderCountFilter) filters.orderCount = orderCountFilter
 
-        // if (registrationDateFrom) {
-        //     filters.createdAt = {
-        //         ...filters.createdAt,
-        //         $gte: new Date(registrationDateFrom as string),
-        //     }
-        // }
-
-        // if (registrationDateTo) {
-        //     const endOfDay = new Date(registrationDateTo as string)
-        //     endOfDay.setHours(23, 59, 59, 999)
-        //     filters.createdAt = {
-        //         ...filters.createdAt,
-        //         $lte: endOfDay,
-        //     }
-        // }
-
-        // if (lastOrderDateFrom) {
-        //     filters.lastOrderDate = {
-        //         ...filters.lastOrderDate,
-        //         $gte: new Date(lastOrderDateFrom as string),
-        //     }
-        // }
-
-        // if (lastOrderDateTo) {
-        //     const endOfDay = new Date(lastOrderDateTo as string)
-        //     endOfDay.setHours(23, 59, 59, 999)
-        //     filters.lastOrderDate = {
-        //         ...filters.lastOrderDate,
-        //         $lte: endOfDay,
-        //     }
-        // }
-
-        // if (totalAmountFrom) {
-        //     filters.totalAmount = {
-        //         ...filters.totalAmount,
-        //         $gte: Number(totalAmountFrom),
-        //     }
-        // }
-
-        // if (totalAmountTo) {
-        //     filters.totalAmount = {
-        //         ...filters.totalAmount,
-        //         $lte: Number(totalAmountTo),
-        //     }
-        // }
-
-        // if (orderCountFrom) {
-        //     filters.orderCount = {
-        //         ...filters.orderCount,
-        //         $gte: Number(orderCountFrom),
-        //     }
-        // }
-
-        // if (orderCountTo) {
-        //     filters.orderCount = {
-        //         ...filters.orderCount,
-        //         $lte: Number(orderCountTo),
-        //     }
-        // }
-
         if (search) {
             const sanitizedSearch = sanitize(search as string, 'strict')
             const escapedSearch = escapeRegExp(sanitizedSearch)
@@ -185,8 +125,8 @@ export const getCustomers = async (
             pagination: {
                 totalUsers,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: Math.max(Number(page) || 1, 1),
+                pageSize: Math.min(Number(limit) || 10, 10),
             },
         })
     } catch (error) {

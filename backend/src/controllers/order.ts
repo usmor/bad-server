@@ -53,44 +53,6 @@ export const getOrders = async (
                 }
             }
         }
-
-        // if (status) {
-        //     if (typeof status === 'object') {
-        //         Object.assign(filters, status)
-        //     }
-        //     if (typeof status === 'string') {
-        //         filters.status = status
-        //     }
-        // }
-
-        // if (totalAmountFrom) {
-        //     filters.totalAmount = {
-        //         ...filters.totalAmount,
-        //         $gte: Number(totalAmountFrom),
-        //     }
-        // }
-
-        // if (totalAmountTo) {
-        //     filters.totalAmount = {
-        //         ...filters.totalAmount,
-        //         $lte: Number(totalAmountTo),
-        //     }
-        // }
-
-        // if (orderDateFrom) {
-        //     filters.createdAt = {
-        //         ...filters.createdAt,
-        //         $gte: new Date(orderDateFrom as string),
-        //     }
-        // }
-
-        // if (orderDateTo) {
-        //     filters.createdAt = {
-        //         ...filters.createdAt,
-        //         $lte: new Date(orderDateTo as string),
-        //     }
-        // }
-
         const totalAmountFilter = sanitizeNumberRange(
             totalAmountFrom,
             totalAmountTo,
@@ -181,8 +143,8 @@ export const getOrders = async (
             pagination: {
                 totalOrders,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: Math.max(Number(page) || 1, 1),
+                pageSize: Math.min(Number(limit) || 10, 10),
             },
         })
     } catch (error) {
@@ -258,8 +220,8 @@ export const getOrdersCurrentUser = async (
             pagination: {
                 totalOrders,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: Math.max(Number(page) || 1, 1),
+                pageSize: Math.min(Number(limit) || 10, 10),
             },
         })
     } catch (error) {
