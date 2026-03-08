@@ -18,7 +18,7 @@ const orderRouter = Router()
 const csrfProtection = csrf({ cookie: true })
 
 orderRouter.post('/', auth, validateOrderBody, createOrder)
-orderRouter.get('/all', auth, getOrders)
+orderRouter.get('/all', auth, roleGuardMiddleware(Role.Admin), getOrders)
 orderRouter.get('/all/me', auth, getOrdersCurrentUser)
 orderRouter.get(
     '/:orderNumber',
@@ -35,6 +35,12 @@ orderRouter.patch(
     updateOrder
 )
 
-orderRouter.delete('/:id', auth, csrfProtection, roleGuardMiddleware(Role.Admin), deleteOrder)
+orderRouter.delete(
+    '/:id',
+    auth,
+    csrfProtection,
+    roleGuardMiddleware(Role.Admin),
+    deleteOrder
+)
 
 export default orderRouter
